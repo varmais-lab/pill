@@ -68,8 +68,11 @@
       if (!data.patients.some(patient => patient.id === body.patientId) || !str(body.name) || !Array.isArray(body.times) || !body.times.length || body.times.length > 12 || !body.times.every(time)) {
         throw Error('Patient, medicine name, valid times required');
       }
-      const medicine = { id: id(), patientId: body.patientId, name: str(body.name), type: str(body.type, 30) || 'Tablet', dose: str(body.dose, 70) || 'As prescribed', times: [...new Set(body.times)].sort(), instructions: str(body.instructions, 160), active: true };
-      data.medicines.push(medicine);
+      const existing = body.id ? data.medicines.find(m => m.id === body.id) : null;
+      if (body.id && !existing) throw Error('Medicine not found');
+      const medicine = { id: existing ? existing.id : id(), patientId: body.patientId, name: str(body.name), type: str(body.type, 30) || 'Tablet', dose: str(body.dose, 70) || 'As prescribed', times: [...new Set(body.times)].sort(), instructions: str(body.instructions, 160), active: body.active !== false && body.active !== 'false' };
+      if (existing) data.medicines[data.medicines.indexOf(existing)] = medicine;
+      else data.medicines.push(medicine);
       save(data);
       return copy(medicine);
     }

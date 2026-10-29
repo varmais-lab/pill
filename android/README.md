@@ -1,4 +1,31 @@
-# Tablet Reminder for Android — prototype 0.1.0
+# Tablet Reminder for Android — accounts prototype 0.2.0
+
+This version adds email/password sign-in, personal medicine editing, administrator
+user management, and a Google Sheets backend. See
+[`../sheets-backend/README.md`](../sheets-backend/README.md) for the required one-time
+Google authorization and backend activation. Until that step is completed, shared
+login is not connected. The app's **Use offline prototype** option preserves the
+previous local mode.
+
+Install `TabletReminder-Accounts.apk` over the existing app without uninstalling.
+It uses the same application ID and prototype signing certificate, with version
+code 2. Previous unlinked on-phone records are retained in a private legacy
+backup and can be accessed by switching to the offline prototype. They are not
+automatically uploaded or attached to a new user's account.
+
+After the administrator activates the backend, enter its `/exec` address under
+**Connection settings** and sign in. Users can add/edit/pause their own medicines.
+Admins also get **Users** controls for creating accounts, changing access,
+resetting passwords, and managing a selected user's medicines. The old `demo123`
+password applies only to the offline prototype, never to shared accounts.
+
+Shared changes require internet. Reminder alarms use the current account's
+cached schedule; refresh the app to fetch changes made by an administrator.
+Signing out clears that account's local schedule and cancels its phone alarms.
+Session tokens are encrypted with an Android Keystore key. The network client
+accepts only HTTPS Apps Script deployment URLs and Google content redirects.
+
+## Original offline mode
 
 Offline Android app based on the Tablet Reminder web prototype. Android 8.0+
 (API 26+). It packages the existing mobile UI inside a restricted WebView and
@@ -17,8 +44,9 @@ rescheduling after reboot, time-zone changes, or app updates.
 6. Tap **Test notification**. For a scheduled test, add a sample medicine a few
    minutes ahead, lock the phone, and verify that the notification arrives.
 
-The app has no internet permission and does not require the hosted website,
-ChatGPT login, Node.js, or a server. Every phone has its own independent records.
+Offline mode does not require the hosted website, ChatGPT login, Node.js, or a
+server. Shared-account mode uses the internet permission for its configured
+Google Apps Script service. Offline records remain independent on each phone.
 Data is saved in the app's private storage, and automatic backups/transfers are
 disabled. There is no export/restore feature yet. Uninstalling clears local data.
 

@@ -42,7 +42,7 @@ def main():
     run([aapt2, 'compile', '--dir', ROOT / 'app/src/main/res', '-o', build / 'resources.zip'])
     run([aapt2, 'link', '-o', build / 'base.apk', '-I', android_jar, '--manifest', build / 'AndroidManifest.xml',
          '--java', build / 'gen', '--min-sdk-version', '26', '--target-sdk-version', '36',
-         '--version-code', '1', '--version-name', '0.1.0', '-A', ROOT / 'app/src/main/assets', build / 'resources.zip'])
+         '--version-code', '2', '--version-name', '0.2.0', '-A', ROOT / 'app/src/main/assets', build / 'resources.zip'])
     sources = list((ROOT / 'app/src/main/java').rglob('*.java')) + list((build / 'gen').rglob('*.java'))
     compiler = [shutil.which('javac')] if shutil.which('javac') else ['java', '-m', 'jdk.compiler/com.sun.tools.javac.Main']
     run(compiler + ['--release', '17', '-encoding', 'UTF-8', '-classpath', android_jar, '-d', build / 'classes'] + sources)

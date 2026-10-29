@@ -28,6 +28,7 @@ public final class MainActivity extends Activity {
     private static final String HOST = "appassets.androidplatform.net";
     private static final int REMINDER_PERMISSION = 101, TEST_PERMISSION = 102;
     private WebView web;
+    private CloudClient cloud;
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,6 +56,8 @@ public final class MainActivity extends Activity {
         settings.setSupportMultipleWindows(false);
         settings.setSafeBrowsingEnabled(true);
         web.addJavascriptInterface(new PhoneBridge(), "TabletAndroid");
+        cloud = new CloudClient(this, web);
+        web.addJavascriptInterface(cloud, "TabletCloud");
         web.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return !local(request.getUrl());
@@ -150,6 +153,7 @@ public final class MainActivity extends Activity {
     public final class PhoneBridge {
         @JavascriptInterface public String loadData() { return new AppStore(MainActivity.this).raw(); }
         @JavascriptInterface public boolean saveData(String raw) {
+            if (cloud != null && cloud.isCloudMode()) return false;
             synchronized (ReminderScheduler.class) {
                 boolean saved = new AppStore(MainActivity.this).save(raw);
                 if (saved) ReminderScheduler.schedule(MainActivity.this);
@@ -164,14 +168,15 @@ public final class MainActivity extends Activity {
         @JavascriptInterface public void settings() { runOnUiThread(() -> new AlertDialog.Builder(MainActivity.this)
             .setTitle("Reminder settings").setItems(new String[]{ "Precise alarm timing", "Notification settings", "About this prototype" }, (dialog, which) -> {
                 if (which == 0) exactSettings(); else if (which == 1) notificationSettings();
-                else new AlertDialog.Builder(MainActivity.this).setTitle("Tablet Reminder 0.1.0")
-                    .setMessage("Offline prototype. Profiles and schedules stay on this phone. The app has no internet permission. Use sample data during testing. Android settings, force-stop, and some battery controls can interrupt reminders. Uninstalling removes local data.")
+                else new AlertDialog.Builder(MainActivity.this).setTitle("Tablet Reminder 0.2.0")
+                    .setMessage("Shared accounts sync records to your organisation's spreadsheet. Phone reminders use your own cached schedule. Offline prototype mode keeps records on this phone. Android settings, force-stop, and battery controls can interrupt reminders. Uninstalling removes local records.")
                     .setPositiveButton("OK", null).show();
             }).show()); }
     }
 
     @Override protected void onDestroy() {
-        if (web != null) { web.removeJavascriptInterface("TabletAndroid"); web.destroy(); }
+        if (cloud != null) cloud.close();
+        if (web != null) { web.removeJavascriptInterface("TabletAndroid"); web.removeJavascriptInterface("TabletCloud"); web.destroy(); }
         super.onDestroy();
     }
 }
